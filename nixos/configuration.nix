@@ -103,6 +103,7 @@ in
      vscode
      zed-editor
      gh
+     obs-studio
      bibata-cursors
      go
      fastfetch
