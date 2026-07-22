@@ -6,12 +6,19 @@
 
 let
   unstable = import <nixos-unstable> { config = config.nixpkgs.config; };
+  # Keep Home Manager on the same release as the NixOS channel without relying
+  # on a separate, mutable root-level channel.
+  homeManager = builtins.fetchTarball {
+    url = "https://github.com/nix-community/home-manager/archive/4ce190229c73d44536caa7072f6308fb2d8feeb3.tar.gz";
+    sha256 = "sha256-ZWyzLbS1yKUTeFJLmdVuWNnHttL333/ldJbEE+KzCrM=";
+  };
 in
 
 {
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
+      (import "${homeManager}/nixos")
     ];
 
   # Bootloader.
@@ -66,6 +73,13 @@ in
     description = "Tom Hackshaw";
     extraGroups = [ "networkmanager" "wheel" ];
     packages = with pkgs; [];
+  };
+
+  # Activate Tom's Home Manager configuration with `nixos-rebuild switch`.
+  home-manager = {
+    useGlobalPkgs = true;
+    useUserPackages = true;
+    users.tom = import ../home-manager/home.nix;
   };
 
   # Enable automatic login for the user.
