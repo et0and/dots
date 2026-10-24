@@ -1,4 +1,29 @@
-{ config, pkgs, ... }:
+{ config, pkgs, unstable, ... }:
+
+let
+  # IRIS pinned to commit 7c1e449 (2026-10-17). Not in nixpkgs yet, so build
+  # the Go module directly from a pinned GitHub tarball.
+  iris = pkgs.buildGoModule {
+    pname = "iris";
+    version = "0-unstable-2026-10-17";
+    src = pkgs.fetchFromGitHub {
+      owner = "versenilvis";
+      repo = "IRIS";
+      rev = "7c1e449529fbaea329a698774b2dcb0c5d9ba368";
+      hash = "sha256-MeemUaqWEbBFMO0Q8sXey3PdPAFO/IcoYHCb38W628k=";
+    };
+    subPackages = [ "cmd/iris" ];
+    proxyVendor = true;
+    vendorHash = "sha256-huyTWK6ef42KY2zmFIQuFoeR8B8XKHE7OVfFnfefeCU=";
+    doCheck = false;
+    meta = {
+      description = "Shell auto-completion tool";
+      homepage = "https://github.com/versenilvis/IRIS";
+      license = pkgs.lib.licenses.bsd0;
+      mainProgram = "iris";
+    };
+  };
+in
 
 {
   # Home Manager needs a bit of information about you and the paths it should
@@ -15,9 +40,20 @@
   # release notes.
   home.stateVersion = "25.11"; # Please read the comment before changing.
 
-  home.packages = with pkgs; [
-    playerctl
+  home.packages = [
+    pkgs.playerctl
+    iris
+    unstable.opencode-desktop
   ];
+
+  # Start IRIS for interactive bash sessions. IRIS execs itself and runs bash
+  # underneath; `iris` must be on PATH (home.packages above guarantees that).
+  programs.bash = {
+    enable = true;
+    initExtra = ''
+      eval "$(iris init bash)"
+    '';
+  };
 
   # Provide Bibata consistently to Hyprland, GTK, XWayland, and applications.
   home.pointerCursor = {

@@ -3,7 +3,15 @@
   "share": "disabled",
   "agent": {
     "explore": {
-      "model": "opencode-go/deepseek-v4-flash"
+      "model": "opencode-go/deepseek-v4.1-flash"
+    }
+  },
+  "mcp": {
+    "servers": {
+      "fff": {
+        "type": "local",
+        "command": ["/home/tom/.local/bin/fff-mcp"]
+      }
     }
   }
 }

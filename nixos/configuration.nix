@@ -71,7 +71,8 @@ in
   users.users.tom = {
     isNormalUser = true;
     description = "Tom Hackshaw";
-    extraGroups = [ "networkmanager" "wheel" ];
+    # "input": Handy reads /dev/input directly to catch its global hotkey.
+    extraGroups = [ "networkmanager" "wheel" "input" ];
     packages = with pkgs; [];
   };
 
@@ -79,6 +80,8 @@ in
   home-manager = {
     useGlobalPkgs = true;
     useUserPackages = true;
+    backupFileExtension = "backup";
+    extraSpecialArgs = { inherit unstable; };
     users.tom = import ../home-manager/home.nix;
   };
 
@@ -131,6 +134,9 @@ in
      thunar-volman
      networkmanagerapplet
      polkit_gnome
+     # Offline speech-to-text + the typing tool Handy uses on Wayland.
+     unstable.handy
+     unstable.wtype
   ];
   
   programs.nix-ld.enable = true;
@@ -187,6 +193,12 @@ in
     alsa.support32Bit = true;
     pulse.enable = true;
   };
+
+  # Handy creates a virtual input device via /dev/uinput; default perms are
+  # root-only, so open it to the input group (which tom is in).
+  services.udev.extraRules = ''
+    KERNEL=="uinput", GROUP="input", MODE="0660"
+  '';
 
   systemd.user.services.polkit-gnome-authentication-agent-1 = {
     description = "polkit-gnome-authentication-agent-1";
